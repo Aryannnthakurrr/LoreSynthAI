@@ -81,7 +81,7 @@ export default async function handler(req) {
         },
       });
     } else {
-      const enhancedImagePrompt = `comic style illustration, heartwarming scene: ${prompt}, emotional, touching, warm colors, clean lines, digital art`;
+      const enhancedImagePrompt = `comic style illustration, heartwarming scene: ${prompt}, emotional, touching, warm colors, clean lines,clean text in english, digital art`;
       
       const response = await fetch('https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0', {
         method: 'POST',
