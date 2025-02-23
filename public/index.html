@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nova - Your Creative AI Companion</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      /* Space theme */
+      --space-bg: #0f1729;
+      --space-card: #1a2333;
+      --space-primary: #7c3aed;
+      --space-secondary: #2dd4bf;
+      --space-text: #e2e8f0;
+      --space-muted: #94a3b8;
+      
+      /* Ocean theme */
+      --ocean-bg: #0c4a6e;
+      --ocean-card: #164e63;
+      --ocean-primary: #0ea5e9;
+      --ocean-secondary: #22d3ee;
+      --ocean-text: #e0f2fe;
+      --ocean-muted: #7dd3fc;
+      
+      /* Forest theme */
+      --forest-bg: #064e3b;
+      --forest-card: #065f46;
+      --forest-primary: #10b981;
+      --forest-secondary: #34d399;
+      --forest-text: #d1fae5;
+      --forest-muted: #6ee7b7;
+      
+      /* Current theme (default: space) */
+      --bg: var(--space-bg);
+      --card: var(--space-card);
+      --primary: var(--space-primary);
+      --secondary: var(--space-secondary);
+      --text: var(--space-text);
+      --muted: var(--space-muted);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      min-height: 100vh;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Animated background */
+    .stars {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 1; }
+    }
+
+    .star {
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle var(--duration, 1s) infinite var(--delay, 0s);
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .logo {
+      font-size: 3rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      color: transparent;
+      display: inline-block;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 1.1rem;
+    }
+
+    .chat-interface {
+      background: var(--card);
+      border-radius: 1rem;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      margin: 2rem auto;
+      max-width: 800px;
+      transition: all 0.3s ease;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      padding: 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      gap: 1rem;
+    }
+
+    .mode-toggle {
+      display: flex;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 0.5rem;
+      padding: 0.25rem;
+    }
+
+    .mode-btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      background: none;
+      color: var(--muted);
+      border-radius: 0.375rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .mode-btn.active {
+      background: var(--primary);
+      color: white;
+    }
+
+    .theme-switcher {
+      margin-left: auto;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .theme-btn {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 0.5rem;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .theme-btn:hover {
+      transform: scale(1.1);
+    }
+
+    .theme-btn.active {
+      border-color: var(--primary);
+    }
+
+    .input-area {
+      padding: 1.5rem;
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .input-wrapper {
+      position: relative;
+      margin-bottom: 1rem;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 1rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.5rem;
+      color: var(--text);
+      font-size: 1rem;
+      resize: vertical;
+      transition: all 0.2s ease;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.2);
+    }
+
+    .generate-btn {
+      width: 100%;
+      padding: 1rem;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .generate-btn:hover {
+      background: var(--secondary);
+      transform: translateY(-2px);
+    }
+
+    .generate-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .result-area {
+      padding: 1.5rem;
+      min-height: 200px;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    .result-text {
+      white-space: pre-wrap;
+      line-height: 1.6;
+      color: var(--text);
+    }
+
+    .result-image {
+      max-width: 100%;
+      border-radius: 0.5rem;
+      display: none;
+    }
+
+    .loader {
+      display: none;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .loader-icon {
+      display: inline-block;
+      width: 2.5rem;
+      height: 2.5rem;
+      border: 3px solid var(--primary);
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 1s linear infinite;
+    }
+
+    .error-message {
+      display: none;
+      padding: 1rem;
+      background: rgba(239, 68, 68, 0.1);
+      border-left: 4px solid #ef4444;
+      color: #ef4444;
+      margin: 1rem;
+      border-radius: 0.5rem;
+    }
+
+    /* Features tooltip */
+    .features-tooltip {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--card);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      max-width: 300px;
+      z-index: 10;
+      display: none;
+    }
+
+    .features-btn {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--primary);
+      color: white;
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      z-index: 11;
+    }
+
+    .features-btn:hover + .features-tooltip {
+      display: block;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 640px) {
+      .container { padding: 1rem; }
+      .logo { font-size: 2rem; }
+      .toolbar { flex-wrap: wrap; }
+      .theme-switcher { width: 100%; justify-content: center; margin-top: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stars"></div>
+  
+  <div class="container">
+    <header class="header">
+      <h1 class="logo">✨ Nova</h1>
+      <p class="subtitle">Your Creative AI Companion</p>
+    </header>
+
+    <main class="chat-interface">
+      <div class="toolbar">
+        <div class="mode-toggle">
+          <button class="mode-btn active" data-mode="text">
+            <i class="fas fa-pen"></i>
+            Text
+          </button>
+          <button class="mode-btn" data-mode="image">
+            <i class="fas fa-image"></i>
+            Image
+          </button>
+        </div>
+
+        <div class="theme-switcher">
+          <button class="theme-btn active" data-theme="space" style="background: #7c3aed" title="Space Theme"></button>
+          <button class="theme-btn" data-theme="ocean" style="background: #0ea5e9" title="Ocean Theme"></button>
+          <button class="theme-btn" data-theme="forest" style="background: #10b981" title="Forest Theme"></button>
+        </div>
+      </div>
+
+      <div class="input-area">
+        <div class="input-wrapper">
+          <textarea id="prompt" placeholder="Ask me anything or describe an image you'd like to create..."></textarea>
+        </div>
+        <button id="generate" class="generate-btn">
+          <span class="btn-text">Create</span>
+          <i class="fas fa-sparkles btn-icon"></i>
+        </button>
+      </div>
+
+      <div class="loader">
+        <div class="loader-icon"></div>
+        <p class="loader-text"></p>
+      </div>
+
+      <div class="error-message"></div>
+
+      <div class="result-area">
+        <p class="result-text"></p>
+        <img class="result-image" alt="Generated image">
+      </div>
+    </main>
+  </div>
+
+  <button class="features-btn">
+    <i class="fas fa-lightbulb"></i>
+  </button>
+  <div class="features-tooltip">
+    <h3>Tips:</h3>
+    <ul>
+      <li>Press Ctrl + Enter to generate</li>
+      <li>Try different themes for different vibes</li>
+      <li>Switch between Text and Image modes</li>
+      <li>Be specific in your prompts for better results</li>
+    </ul>
+  </div>
+
+  <script>
+    // Create animated star background
+    function createStars() {
+      const stars = document.querySelector('.stars');
+      const numStars = 100;
+      
+      for (let i = 0; i < numStars; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        
+        // Random position
+        star.style.left = `${Math.random() * 100}%`;
+        star.style.top = `${Math.random() * 100}%`;
+        
+        // Random size
+        const size = `${Math.random() * 3}px`;
+        star.style.width = size;
+        star.style.height = size;
+        
+        // Random animation duration and delay
+        star.style.setProperty('--duration', `${2 + Math.random() * 3}s`);
+        star.style.setProperty('--delay', `${Math.random() * 2}s`);
+        
+        stars.appendChild(star);
+      }
+    }
+
+    // Theme switching
+    const themes = {
+      space: {
+        bg: 'var(--space-bg)',
+        card: 'var(--space-card)',
+        primary: 'var(--space-primary)',
+        secondary: 'var(--space-secondary)',
+        text: 'var(--space-text)',
+        muted: 'var(--space-muted)'
+      },
+      ocean: {
+        bg: 'var(--ocean-bg)',
+        card: 'var(--ocean-card)',
+        primary: 'var(--ocean-primary)',
+        secondary: 'var(--ocean-secondary)',
+        text: 'var(--ocean-text)',
+        muted: 'var(--ocean-muted)'
+      },
+      forest: {
+        bg: 'var(--forest-bg)',
+        card: 'var(--forest-card)',
+        primary: 'var(--forest-primary)',
+        secondary: 'var(--forest-secondary)',
+        text: 'var(--forest-text)',
+        muted: 'var(--forest-muted)'
+      }
+    };
+
+    // Fun loading messages
+    const loadingMessages = [
+      "Consulting the cosmos...",
+      "Gathering stardust...",
+      "Channeling creativity...",
+      "Exploring possibilities...",
+      "Weaving digital dreams..."
+    ];
+
+    // Initialize variables
+    let currentMode = 'text';
+    const modeBtns = document.querySelectorAll('.mode-btn');
+    const themeBtns = document.querySelectorAll('.theme-btn');
+    const generateBtn = document.getElementById('generate');
+    const promptInput = document.getElementById('prompt');
+    const const resultText = document.querySelector('.result-text');
+    const resultImage = document.querySelector('.result-image');
+    const loader = document.querySelector('.loader');
+    const loaderText = document.querySelector('.loader-text');
+    const errorMessage = document.querySelector('.error-message');
+    const btnText = generateBtn.querySelector('.btn-text');
+    const btnIcon = generateBtn.querySelector('.btn-icon');
+
+    // Initialize star background
+    createStars();
+
+    // Theme switching functionality
+    themeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const theme = btn.dataset.theme;
+        themeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        // Apply theme variables
+        const selectedTheme = themes[theme];
+        for (const [property, value] of Object.entries(selectedTheme)) {
+          document.documentElement.style.setProperty(`--${property}`, value);
+        }
+        
+        // Update logo based on theme
+        const logo = document.querySelector('.logo');
+        const themeEmojis = {
+          'space': '✨',
+          'ocean': '🌊',
+          'forest': '🌿'
+        };
+        logo.textContent = `${themeEmojis[theme]} Nova`;
+      });
+    });
+
+    // Mode switching
+    modeBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        modeBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentMode = btn.dataset.mode;
+        
+        // Update placeholder text
+        promptInput.placeholder = currentMode === 'text' 
+          ? "Ask me anything..." 
+          : "Describe an image you'd like to create...";
+        
+        clearResults();
+      });
+    });
+
+    function clearResults() {
+      resultText.textContent = '';
+      resultImage.style.display = 'none';
+      errorMessage.style.display = 'none';
+    }
+
+    function showError(message) {
+      errorMessage.textContent = message;
+      errorMessage.style.display = 'block';
+      errorMessage.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function getRandomLoadingMessage() {
+      return loadingMessages[Math.floor(Math.random() * loadingMessages.length)];
+    }
+
+    async function generate(prompt, mode) {
+      try {
+        const response = await fetch('/api/generate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ prompt, mode }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+
+        if (mode === 'text') {
+          const data = await response.json();
+          return data[0]?.generated_text || data.generated_text || "No response generated.";
+        } else {
+          return response.blob();
+        }
+      } catch (error) {
+        throw error;
+      }
+    }
+
+    // Add smooth scrolling to result
+    function scrollToResult() {
+      const resultArea = document.querySelector('.result-area');
+      resultArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // Generate button click handler
+    generateBtn.addEventListener('click', async () => {
+      const prompt = promptInput.value.trim();
+      if (!prompt) {
+        showError('Please enter a prompt first.');
+        promptInput.focus();
+        return;
+      }
+
+      clearResults();
+      generateBtn.disabled = true;
+      loader.style.display = 'block';
+      loaderText.textContent = getRandomLoadingMessage();
+      btnText.textContent = 'Creating...';
+      btnIcon.className = 'fas fa-circle-notch fa-spin';
+
+      try {
+        if (currentMode === 'text') {
+          const generatedText = await generate(prompt, 'text');
+          resultText.textContent = generatedText;
+          scrollToResult();
+        } else {
+          const imageBlob = await generate(prompt, 'image');
+          const imageUrl = URL.createObjectURL(imageBlob);
+          resultImage.src = imageUrl;
+          resultImage.style.display = 'block';
+          resultImage.onload = scrollToResult;
+        }
+      } catch (error) {
+        showError(`Generation failed: ${error.message}`);
+      } finally {
+        generateBtn.disabled = false;
+        loader.style.display = 'none';
+        btnText.textContent = 'Create';
+        btnIcon.className = 'fas fa-sparkles';
+      }
+    });
+
+    // Keyboard shortcuts
+    promptInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && e.ctrlKey) {
+        generateBtn.click();
+      }
+    });
+
+    // Add text autosizing
+    promptInput.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = this.scrollHeight + 'px';
+    });
+
+    // Initialize tooltips
+    const featuresBtn = document.querySelector('.features-btn');
+    const featuresTooltip = document.querySelector('.features-tooltip');
+
+    featuresBtn.addEventListener('mouseenter', () => {
+      featuresTooltip.style.display = 'block';
+    });
+
+    featuresBtn.addEventListener('mouseleave', () => {
+      featuresTooltip.style.display = 'none';
+    });
+
+    // Initialize with default theme
+    document.body.classList.add('theme-space');
+  </script>
+  <script src="app.js"></script>
+</body>
+</html>
