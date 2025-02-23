@@ -22,7 +22,6 @@ export default async function handler(req) {
     }
 
     if (mode === 'text') {
-      // Text generation remains unchanged
       const enhancedPrompt = `You are an empathetic and kind storyteller. Write a emotionally healing and warm story about: ${prompt}. Tell the story naturally, treating the human's feelings as fragile`;
       
       const response = await fetch('https://api-inference.huggingface.co/models/google/gemma-7b', {
@@ -82,43 +81,31 @@ export default async function handler(req) {
         },
       });
     } else {
-      // Create a 4-panel comic strip sequence
-      const panels = [];
-      const comicPrompts = [
-        `comic panel 1 of 4: ${prompt}, emotional and touching scene, warm colors, gentle expressions, comic book style, clean lines`,
-        `comic panel 2 of 4: ${prompt} continued, character development, emotional depth, soft lighting, comic art style`,
-        `comic panel 3 of 4: ${prompt} emotional peak, heartwarming moment, detailed expressions, comic illustration`,
-        `comic panel 4 of 4: ${prompt} resolution, touching finale, tender moment, emotional impact, comic strip style`
-      ];
+      const enhancedImagePrompt = `comic style illustration, heartwarming scene: ${prompt}, emotional, touching, warm colors, clean lines, digital art`;
+      
+      const response = await fetch('https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${HUGGINGFACE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          inputs: enhancedImagePrompt,
+          parameters: {
+            guidance_scale: 7.5,
+            num_inference_steps: 50
+          }
+        }),
+      });
 
-      for (const panelPrompt of comicPrompts) {
-        const response = await fetch('https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${HUGGINGFACE_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ 
-            inputs: panelPrompt,
-            parameters: {
-              guidance_scale: 8.5,  // Increased for better prompt adherence
-              num_inference_steps: 50,
-              negative_prompt: "text, words, speech bubbles, blurry, distorted, low quality"
-            }
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Image generation failed for panel: ${response.status}`);
-        }
-
-        const imageData = await response.arrayBuffer();
-        panels.push(Buffer.from(imageData).toString('base64'));
+      if (!response.ok) {
+        throw new Error(`Image generation failed: ${response.status}`);
       }
 
-      return new Response(JSON.stringify({ panels }), {
+      const imageData = await response.arrayBuffer();
+      return new Response(imageData, {
         headers: { 
-          'Content-Type': 'application/json',
+          'Content-Type': 'image/png',
           'Cache-Control': 'public, max-age=31536000'
         },
       });
