@@ -140,12 +140,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const logo = document.querySelector('.logo');
         const themeEmojis = {
-          'space': '✨',
-          'ocean': '🌊',
-          'forest': '🌿'
+       
         };
         if (logo) {
-          logo.textContent = `${themeEmojis[theme]} Nova`;
+          logo.textContent = `Lore-Syth AI`;
         }
       });
     });
@@ -160,8 +158,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (promptInput) {
           promptInput.placeholder = currentMode === 'text' 
-            ? "Ask me anything..." 
-            : "Describe an image you'd like to create...";
+            ? "What happened..how do you feel..." 
+            : "Text if feeling like cartoons/comics...";
         }
         
         clearResults();
