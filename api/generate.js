@@ -22,9 +22,9 @@ export default async function handler(req) {
     }
 
     if (mode === 'text') {
-      // Enhanced prompt to encourage narrative format
+      // Text generation remains unchanged
       const enhancedPrompt = `You are an empathetic and kind storyteller. Write a emotionally healing and warm story about: ${prompt}. Tell the story naturally, treating the human's feelings as fragile`;
-      const stablePrompt = 'Generate a nice comic about: ${prompt}. Try to make it entertaining.';
+      
       const response = await fetch('https://api-inference.huggingface.co/models/google/gemma-7b', {
         method: 'POST',
         headers: {
@@ -51,29 +51,23 @@ export default async function handler(req) {
       
       if (Array.isArray(data) && data[0]?.generated_text) {
         let cleanedText = data[0].generated_text
-          // Remove step patterns
           .replace(/Step \d+\/\d+/g, '')
           .replace(/^\d+[\.)]/gm, '')
-          // Remove Q&A patterns
           .replace(/^Q:|^A:/gm, '')
           .replace(/^Question:|^Answer:/gm, '')
-          // Remove other formatting
           .replace(/^[-*•]/gm, '')
           .replace(/^(Here is|Below is|This is).*(example|response).*\n/gi, '')
           .replace(/In (Hindi|English|Spanish|French|German):/gi, '')
-          // Clean up whitespace
           .replace(/\n\s*\n/g, '\n')
           .replace(/\s+/g, ' ')
           .trim();
 
-        // Combine fragmented sentences
         cleanedText = cleanedText
           .split(/\n/)
           .filter(line => line.trim().length > 0)
           .map(line => line.trim())
           .join(' ');
 
-        // Ensure proper ending
         if (!cleanedText.match(/[.!?]$/)) {
           cleanedText += '.';
         }
@@ -88,29 +82,43 @@ export default async function handler(req) {
         },
       });
     } else {
-      const response = await fetch('https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${HUGGINGFACE_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          inputs: stablePrompt,
-          parameters: {
-            guidance_scale: 7.5,
-            num_inference_steps: 50
-          }
-        }),
-      });
+      // Create a 4-panel comic strip sequence
+      const panels = [];
+      const comicPrompts = [
+        `comic panel 1 of 4: ${prompt}, emotional and touching scene, warm colors, gentle expressions, comic book style, clean lines`,
+        `comic panel 2 of 4: ${prompt} continued, character development, emotional depth, soft lighting, comic art style`,
+        `comic panel 3 of 4: ${prompt} emotional peak, heartwarming moment, detailed expressions, comic illustration`,
+        `comic panel 4 of 4: ${prompt} resolution, touching finale, tender moment, emotional impact, comic strip style`
+      ];
 
-      if (!response.ok) {
-        throw new Error(`Image generation failed: ${response.status}`);
+      for (const panelPrompt of comicPrompts) {
+        const response = await fetch('https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${HUGGINGFACE_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ 
+            inputs: panelPrompt,
+            parameters: {
+              guidance_scale: 8.5,  // Increased for better prompt adherence
+              num_inference_steps: 50,
+              negative_prompt: "text, words, speech bubbles, blurry, distorted, low quality"
+            }
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Image generation failed for panel: ${response.status}`);
+        }
+
+        const imageData = await response.arrayBuffer();
+        panels.push(Buffer.from(imageData).toString('base64'));
       }
 
-      const imageData = await response.arrayBuffer();
-      return new Response(imageData, {
+      return new Response(JSON.stringify({ panels }), {
         headers: { 
-          'Content-Type': 'image/png',
+          'Content-Type': 'application/json',
           'Cache-Control': 'public, max-age=31536000'
         },
       });
