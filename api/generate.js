@@ -24,7 +24,7 @@ export default async function handler(req) {
     if (mode === 'text') {
       // Enhanced prompt to encourage narrative format
       const enhancedPrompt = `You are an empathetic and kind storyteller. Write a emotionally healing and warm story about: ${prompt}. Tell the story naturally, treating the human's feelings as fragile`;
-
+      const stablePrompt = 'Generate a nice comic about: ${prompt}. Try to make it entertaining.';
       const response = await fetch('https://api-inference.huggingface.co/models/google/gemma-7b', {
         method: 'POST',
         headers: {
@@ -95,7 +95,7 @@ export default async function handler(req) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          inputs: prompt,
+          inputs: stablePrompt,
           parameters: {
             guidance_scale: 7.5,
             num_inference_steps: 50
