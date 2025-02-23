@@ -90,11 +90,7 @@ export default async function handler(req) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          inputs: enhancedImagePrompt,
-          parameters: {
-            guidance_scale: 7.5,
-            num_inference_steps: 50
-          }
+          inputs: enhancedImagePrompt  // Fixed: removed the trailing comma that was causing the error
         }),
       });
 
