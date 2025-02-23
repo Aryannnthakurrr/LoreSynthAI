@@ -23,7 +23,7 @@ export default async function handler(req) {
 
     if (mode === 'text') {
       // Enhanced prompt to encourage narrative format
-      const enhancedPrompt = `You are an empathetic and creative storyteller. Write a emotionally healing and warm narrative response about: ${prompt}. Tell the story naturally, without using steps, numbers, or question-answer format.`;
+      const enhancedPrompt = `You are an empathetic and creative storyteller. Write a emotionally healing and warm narrative response about: ${prompt}. Tell the story naturally, without using steps, numbers, dont show underlying thinking process or question-answer format.`;
 
       const response = await fetch('https://api-inference.huggingface.co/models/google/gemma-7b', {
         method: 'POST',
