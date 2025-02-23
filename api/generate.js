@@ -50,6 +50,7 @@ export default async function handler(req) {
       
       if (Array.isArray(data) && data[0]?.generated_text) {
         let cleanedText = data[0].generated_text
+          .replace(/^[^A-Z].*?(?=[A-Z])/s, '') // Remove everything before the first capital letter
           .replace(/Step \d+\/\d+/g, '')
           .replace(/^\d+[\.)]/gm, '')
           .replace(/^Q:|^A:/gm, '')
@@ -60,7 +61,6 @@ export default async function handler(req) {
           .replace(/\n\s*\n/g, '\n')
           .replace(/\s+/g, ' ')
           .trim();
-
         cleanedText = cleanedText
           .split(/\n/)
           .filter(line => line.trim().length > 0)
